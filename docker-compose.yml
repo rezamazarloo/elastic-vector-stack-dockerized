@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  es-setup:
+    build:
+      context: ./setup
+    container_name: es-setup
+    profiles:
+      - setup
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    network_mode: service:elasticsearch
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
+      VECTOR_PASSWORD: ${VECTOR_PASSWORD:-changeme}
+      BACKEND_PASSWORD: ${BACKEND_PASSWORD:-changeme}
+
+  kibana-keygen:
+    image: kibana:8.19.2
+    container_name: kibana-keygen
+    profiles:
+      - setup
+    network_mode: none
+    command: ["bin/kibana-encryption-keys", "generate"]
+    restart: no
+
+  elasticsearch:
+    image: elasticsearch:8.19.2
+    container_name: elasticsearch
+    # total container RAM is 1GB
+    # set 512MB heap size (half of container RAM)
+    mem_limit: 1g
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      # 512MB heap size (half of container RAM)
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    # Memory locked in RAM (no swap)
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data:Z
+      - ./elasticsearch/development/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - elknet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana:
+    image: kibana:8.19.2
+    container_name: kibana
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
+      KIBANA_SECURITY_ENCRYPTION_KEY: ${KIBANA_SECURITY_ENCRYPTION_KEY:-}
+      KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY: ${KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY:-}
+      KIBANA_REPORTING_ENCRYPTION_KEY: ${KIBANA_REPORTING_ENCRYPTION_KEY:-}
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./kibana/development/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    networks:
+      - elknet
+    restart: unless-stopped
+
+volumes:
+  elasticsearch_data:
+
+networks:
+  elknet:
+    driver: bridge

@@ -1,0 +1,18 @@
+server.name: kibana
+server.host: 0.0.0.0
+
+elasticsearch.hosts: [ http://elasticsearch:9200 ]
+elasticsearch.username: kibana_system
+elasticsearch.password: ${KIBANA_SYSTEM_PASSWORD}
+
+monitoring.ui.container.elasticsearch.enabled: true
+telemetry.enabled: false
+
+# following settings can be commented out but highly recommended to set for security 👇👇👇
+# use docker service to generate and set in .env
+# Used to encrypt session information
+xpack.security.encryptionKey: ${KIBANA_SECURITY_ENCRYPTION_KEY}
+# Used to encrypt stored objects such as dashboards and visualizations
+xpack.encryptedSavedObjects.encryptionKey: ${KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY}
+# Used to encrypt saved reports
+xpack.reporting.encryptionKey: ${KIBANA_REPORTING_ENCRYPTION_KEY}

@@ -1,0 +1,20 @@
+{
+  "cluster": [
+    "manage_index_templates",
+    "manage_ingest_pipelines",
+    "monitor",
+    "read_pipeline"
+  ],
+  "indices": [
+    {
+      "names": ["logs*"], 
+      "privileges": [
+        "write",
+        "create",
+        "index",
+        "create_index", 
+        "view_index_metadata"
+      ]
+    }
+  ]
+}
