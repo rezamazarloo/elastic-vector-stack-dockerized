@@ -1,0 +1,148 @@
+version: "3.9"
+
+services:
+  es-setup:
+    build:
+      context: ./setup
+    container_name: es-setup
+    profiles:
+      - setup
+    depends_on:
+      es01:
+        condition: service_healthy
+      es02:
+        condition: service_healthy
+      es03:
+        condition: service_healthy
+    network_mode: service:es01
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
+      VECTOR_PASSWORD: ${VECTOR_PASSWORD:-changeme}
+      BACKEND_PASSWORD: ${BACKEND_PASSWORD:-changeme}
+
+  kibana-keygen:
+    image: kibana:8.19.2
+    container_name: kibana-keygen
+    profiles:
+      - setup
+    network_mode: none
+    command: ["bin/kibana-encryption-keys", "generate"]
+    restart: no
+
+  es01:
+    image: elasticsearch:8.19.2
+    container_name: es01
+    # total container RAM is 4GB (minimum for production must be 8GB)
+    mem_limit: 4g
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      # 2GB heap size (half of container RAM)
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    # Memory locked in RAM (no swap)
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es01_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/production/es01.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - "9201:9200"
+      - "9301:9300"
+    networks:
+      - elknet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  es02:
+    image: elasticsearch:8.19.2
+    container_name: es02
+    # total container RAM is 4GB (minimum for production must be 8GB)
+    mem_limit: 4g
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      # 2GB heap size (half of container RAM)
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    # Memory locked in RAM (no swap)
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es02_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/production/es02.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - "9202:9200"
+      - "9302:9300"
+    networks:
+      - elknet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+  
+  es03:
+    image: elasticsearch:8.19.2
+    container_name: es03
+    # total container RAM is 4GB (minimum for production must be 8GB)
+    mem_limit: 4g
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
+      # 2GB heap size (half of container RAM)
+      ES_JAVA_OPTS: "-Xms2g -Xmx2g"
+    # Memory locked in RAM (no swap)
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es03_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/production/es03.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - "9203:9200"
+      - "9303:9300"
+    networks:
+      - elknet
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  kibana:
+    image: kibana:8.19.2
+    container_name: kibana
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
+      KIBANA_SECURITY_ENCRYPTION_KEY: ${KIBANA_SECURITY_ENCRYPTION_KEY:-}
+      KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY: ${KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY:-}
+      KIBANA_REPORTING_ENCRYPTION_KEY: ${KIBANA_REPORTING_ENCRYPTION_KEY:-}
+    ports:
+      - "5601:5601"
+    depends_on:
+      - es01
+      - es02
+      - es03
+    volumes:
+      - ./kibana/production/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    networks:
+      - elknet
+    restart: unless-stopped
+
+# kibana port change
+volumes:
+  es01_data:
+  es02_data:
+  es03_data:
+
+networks:
+  elknet:
+    driver: bridge

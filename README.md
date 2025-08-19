@@ -12,3 +12,16 @@ in first time we have to run docker services with setup profile to generate encr
 ## run (development)
 
 after setup is done, we can run the project with `docker compose up -d` command to load up elasticsearch and kibana services.
+
+## setup (production)
+
+in production `xpack.security.enabled: true` must be set also we must create ssl and define in setting otherwise cluster nodes refuse to connect to each other.
+
+xpack.security.transport.ssl.enabled=true
+xpack.security.http.ssl.enabled=true
+xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elastic-certificates.p12
+xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elastic-certificates.p12
+
+`docker compose -f docker-compose.prod.yml up  kibana-keygen`
+
+`docker compose -f docker-compose.prod.yml up --build es-setup && docker compose -f docker-compose.prod.yml down`

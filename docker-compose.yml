@@ -65,7 +65,7 @@ services:
       KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY: ${KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY:-}
       KIBANA_REPORTING_ENCRYPTION_KEY: ${KIBANA_REPORTING_ENCRYPTION_KEY:-}
     ports:
-      - "5601:5601"
+      - "5600:5601"
     depends_on:
       - elasticsearch
     volumes:

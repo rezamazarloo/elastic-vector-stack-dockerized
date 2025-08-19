@@ -1,0 +1,10 @@
+cluster.name: gmtii-cluster
+node.name: es-node-1
+network.host: 0.0.0.0
+
+discovery.seed_hosts: ["es01", "es02", "es03"]
+cluster.initial_master_nodes: ["es-node-1", "es-node-2", "es-node-3"]
+
+bootstrap.memory_lock: true
+xpack.security.enabled: true
+xpack.license.self_generated.type: basic
