@@ -1,6 +1,6 @@
 # elasticsearch and kibana with docker-compose
 
-this is a simple project to run elasticsearch and kibana with docker-compose.
+this is a simple project to run elasticsearch and kibana with docker-compose and log aggregator of vector.
 
 ## setup (development)
 
