@@ -29,7 +29,7 @@ services:
     user: "0" # run as root so it can write into mounted folder
     volumes:
       - ./elasticsearch/production/cert-config.yml:/usr/share/elasticsearch/config/cert-config.yml:ro
-      - ./elasticsearch/production/cert:/certs
+      - ./elasticsearch/production/certs:/certs
     networks:
       - elknet
     profiles:
@@ -82,7 +82,7 @@ services:
         hard: -1
     volumes:
       - es01_data:/usr/share/elasticsearch/data
-      - ./elasticsearch/production/cert:/usr/share/elasticsearch/config/certs:ro
+      - ./elasticsearch/production/certs:/usr/share/elasticsearch/config/certs:ro
       - ./elasticsearch/production/es01.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - "9201:9200"
@@ -112,7 +112,7 @@ services:
         hard: -1
     volumes:
       - es02_data:/usr/share/elasticsearch/data
-      - ./elasticsearch/production/cert:/usr/share/elasticsearch/config/certs:ro
+      - ./elasticsearch/production/certs:/usr/share/elasticsearch/config/certs:ro
       - ./elasticsearch/production/es02.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - "9202:9200"
@@ -142,7 +142,7 @@ services:
         hard: -1
     volumes:
       - es03_data:/usr/share/elasticsearch/data
-      - ./elasticsearch/production/cert:/usr/share/elasticsearch/config/certs:ro
+      - ./elasticsearch/production/certs:/usr/share/elasticsearch/config/certs:ro
       - ./elasticsearch/production/es03.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - "9203:9200"
@@ -172,6 +172,7 @@ services:
       - es03
     volumes:
       - ./kibana/production/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+      - ./elasticsearch/production/certs/ca/ca.crt:/usr/share/kibana/config/certs/ca/ca.crt:ro
     networks:
       - elknet
     restart: unless-stopped
