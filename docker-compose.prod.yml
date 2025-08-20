@@ -55,6 +55,7 @@ services:
       KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-changeme}
       VECTOR_PASSWORD: ${VECTOR_PASSWORD:-changeme}
       BACKEND_PASSWORD: ${BACKEND_PASSWORD:-changeme}
+    entrypoint: ["/bin/bash", "/entrypoint.prod.sh"]
 
   kibana-keygen:
     image: kibana:8.19.2
@@ -90,7 +91,7 @@ services:
       - elknet
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      test: ["CMD-SHELL", "curl -s -k -u elastic:${ELASTIC_PASSWORD:-changeme} https://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
       interval: 10s
       timeout: 10s
       retries: 120
@@ -120,7 +121,7 @@ services:
       - elknet
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      test: ["CMD-SHELL", "curl -s -k -u elastic:${ELASTIC_PASSWORD:-changeme} https://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
       interval: 10s
       timeout: 10s
       retries: 120
@@ -150,7 +151,7 @@ services:
       - elknet
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      test: ["CMD-SHELL", "curl -s -k -u elastic:${ELASTIC_PASSWORD:-changeme} https://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
       interval: 10s
       timeout: 10s
       retries: 120
