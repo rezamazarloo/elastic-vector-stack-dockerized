@@ -185,4 +185,5 @@ volumes:
 
 networks:
   elknet:
+    name: elknet # to prevent renaming to <project>_<network>
     driver: bridge
