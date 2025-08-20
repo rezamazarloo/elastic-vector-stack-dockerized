@@ -6,7 +6,7 @@ this is a simple project to run elasticsearch and kibana with docker-compose.
 
 in first time we have to run docker services with setup profile to generate encryption keys for kibana and create our custom roles and users.
 
-- generate encryption keys: run `docker compose up kibana-keygen` to create KIBANA_SECURITY_ENCRYPTION_KEY, KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY, KIBANA_REPORTING_ENCRYPTION_KEY and manually set in .env file.
+- generate encryption keys: run `docker compose run --rm kibana-keygen` to create KIBANA_SECURITY_ENCRYPTION_KEY, KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY, KIBANA_REPORTING_ENCRYPTION_KEY and manually set in .env file.
 - create custom role and users: run `docker compose up --build es-setup && docker compose down` to change default kibana_system user password and create custom role and users in elasticsearch for backend and vector. (if any error occurs use `docker compose down -v` to remove volumes and elasticsearch data and try again)
 
 ## run (development)
@@ -15,13 +15,8 @@ after setup is done, we can run the project with `docker compose up -d` command 
 
 ## setup (production)
 
-in production `xpack.security.enabled: true` must be set also we must create ssl and define in setting otherwise cluster nodes refuse to connect to each other.
+in production `xpack.security.enabled: true` must be set so authentication and ssl be enabled also we must create ssl and define in setting otherwise cluster nodes refuse to connect to each other (exit code 78).
 
-xpack.security.transport.ssl.enabled=true
-xpack.security.http.ssl.enabled=true
-xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/certs/elastic-certificates.p12
-xpack.security.http.ssl.truststore.path=/usr/share/elasticsearch/config/certs/elastic-certificates.p12
-
-`docker compose -f docker-compose.prod.yml up  kibana-keygen`
-
-`docker compose -f docker-compose.prod.yml up --build es-setup && docker compose -f docker-compose.prod.yml down`
+- generate encryption keys: run `docker compose -f docker-compose.prod.yml run --rm kibana-keygen` to create KIBANA_SECURITY_ENCRYPTION_KEY, KIBANA_SAVED_OBJECTS_ENCRYPTION_KEY, KIBANA_REPORTING_ENCRYPTION_KEY and manually set in .env file.
+- cert generation: we must create 2 types of certificates a unique cert fo each node for node to node communication (xpack.security.transport) and a common cert (ca which is shared) for http communication (xpack.security.http). to do so run `docker compose -f docker-compose.prod.yml run --rm elasticsearch-certgen`.
+- create custom role and users: run `docker compose -f docker-compose.prod.yml up --build es-setup && docker compose -f docker-compose.prod.yml down` to change default kibana_system user password and create custom role and users in elasticsearch for backend and vector. (if any error occurs use `docker compose -f docker-compose.prod.yml down -v` to remove volumes and elasticsearch data and try again)

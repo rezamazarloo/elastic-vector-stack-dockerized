@@ -1,6 +1,41 @@
 version: "3.9"
 
 services:
+  elasticsearch-certgen:
+    image: elasticsearch:8.19.2
+    container_name: elasticsearch-certgen
+    command: >
+      bash -c '
+        if [ ! -f /certs/ca/ca.crt ]; then
+          echo "Generating CA...";
+          elasticsearch-certutil ca --silent --pem --out /certs/elastic-stack-ca.zip;
+          unzip /certs/elastic-stack-ca.zip -d /certs;
+          rm -f /certs/elastic-stack-ca.zip;
+        fi
+
+        if [ ! -f /certs/es01/es01.crt ]; then
+          echo "Generating node certs...";
+          elasticsearch-certutil cert --silent --pem \
+            --ca-cert /certs/ca/ca.crt \
+            --ca-key /certs/ca/ca.key \
+            --in ./config/cert-config.yml \
+            --out /certs/elastic-certificates.zip;
+          unzip /certs/elastic-certificates.zip -d /certs;
+          rm -f /certs/elastic-certificates.zip;
+        fi
+
+        echo "✅ Certificates are ready in /certs"
+      '
+    user: "0" # run as root so it can write into mounted folder
+    volumes:
+      - ./elasticsearch/production/cert-config.yml:/usr/share/elasticsearch/config/cert-config.yml:ro
+      - ./elasticsearch/production/cert:/certs
+    networks:
+      - elknet
+    profiles:
+      - setup
+    restart: no
+
   es-setup:
     build:
       context: ./setup
@@ -46,6 +81,7 @@ services:
         hard: -1
     volumes:
       - es01_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/production/cert:/usr/share/elasticsearch/config/certs:ro
       - ./elasticsearch/production/es01.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - "9201:9200"
@@ -75,6 +111,7 @@ services:
         hard: -1
     volumes:
       - es02_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/production/cert:/usr/share/elasticsearch/config/certs:ro
       - ./elasticsearch/production/es02.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - "9202:9200"
@@ -104,6 +141,7 @@ services:
         hard: -1
     volumes:
       - es03_data:/usr/share/elasticsearch/data
+      - ./elasticsearch/production/cert:/usr/share/elasticsearch/config/certs:ro
       - ./elasticsearch/production/es03.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - "9203:9200"
