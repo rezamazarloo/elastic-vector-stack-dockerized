@@ -74,6 +74,25 @@ services:
     networks:
       - elknet
     restart: unless-stopped
+  
+  vector:
+    image: timberio/vector:0.49.0-debian
+    container_name: vector
+    environment:
+      - ELASTICSEARCH_VECTOR_USER=${ELASTICSEARCH_VECTOR_USER:-}
+      - ELASTICSEARCH_VECTOR_PASSWORD=${ELASTICSEARCH_VECTOR_PASSWORD:-}
+    volumes:
+      - ./logs:/logs:ro
+      # don't use .yml unless it uses default vector.yaml and shows random output to console
+      - ./vector/vector.yml:/etc/vector/vector.yaml:ro
+    ports:
+      - "8686:8686"  # Expose Vector API port
+    networks:
+      # for vector if we run it on a seperat docker compose like django app use same network with external: true
+      - elknet
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
 
 volumes:
   elasticsearch_data:

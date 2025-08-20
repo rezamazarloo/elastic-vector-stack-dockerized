@@ -1,0 +1,54 @@
+api:
+  enabled: true
+  address: 0.0.0.0:8686  # Enable Vector API on port 8686
+
+sources:
+  notification_logs:
+    type: file
+    include:
+      - /logs/notification.log
+      - /logs/notification.log.*
+    ignore_older_secs: 86400  # Ignores files older than 1 day.
+    read_from: beginning
+    # multiline:
+    #   type: starts_with
+    #   start_pattern: ^\[  # Groups multiline logs starting with a timestamp (e.g., [2025-08-20 ...]).
+    fingerprint:
+      strategy: "device_and_inode" # Uses device ID + inode number to identify files and renamed ones
+
+transforms:
+  parsed_notification_logs:
+    type: remap
+    inputs:
+      - notification_logs
+    source: |
+      parsed, err = parse_regex(.message, r'^\[(?P<timestamp>[^\]]+)\] \[(?P<level>[^\]]+)\] \[(?P<name>[^\]]+)\] (?P<message>.*)$')
+      if err == null {
+        . = parsed
+        .timestamp = parse_timestamp!(.timestamp, "%Y-%m-%d %H:%M:%S,%f")
+      } else {
+        del(.)
+      }
+      .host = get_hostname!()
+
+sinks:
+  console:
+    type: console
+    inputs:
+      - parsed_notification_logs
+    encoding:
+      codec: json
+  # elasticsearch:
+  #   type: elasticsearch
+  #   inputs:
+  #     - parsed_notification_logs
+  #   endpoints:
+  #     - http://elasticsearch:9200  # Elasticsearch service name in the elknet network.
+  #   api_version: v8
+  #   index: logs-{{ timestamp | format: "%Y.%m.%d" }}  # Dynamic index based on log timestamp.
+  #   bulk_action: index
+  #   auth:
+  #     strategy: basic
+  #     user: ${ELASTICSEARCH_VECTOR_USER}
+  #     password: ${ELASTICSEARCH_VECTOR_PASSWORD}
+

@@ -11,7 +11,8 @@ in first time we have to run docker services with setup profile to generate encr
 
 ## run (development)
 
-after setup is done, we can run the project with `docker compose up -d --build` command to load up elasticsearch and kibana services.
+after setup is done, we can run the project with `docker compose up -d --build` command to load up elasticsearch and kibana services. \
+to run without vector `docker compose up -d --build --scale vector=0` or `docker compose up -d elasticsearch kibana`.
 
 ## setup (production)
 
@@ -23,7 +24,8 @@ in production `xpack.security.enabled: true` must be set so authentication and s
 
 ## run (production)
 
-after setup is done, we can run the project with `docker compose -f docker-compose.prod.yml up -d --build` command to load up elasticsearch cluster and kibana services.
+after setup is done, we can run the project with `docker compose -f docker-compose.prod.yml up -d --build` command to load up elasticsearch cluster and kibana services. \
+to run without vector `docker compose -f docker-compose.prod.yml up -d --build --scale vector=0` or `docker compose -f docker-compose.prod.yml up -d es01 es02 es03 kibana`.
 
 ## notice
 
@@ -36,3 +38,5 @@ server.ssl.enabled: true
 server.ssl.certificate: /usr/share/kibana/config/certs/kibana.crt
 server.ssl.key: /usr/share/kibana/config/certs/kibana.key
   ```
+
+- for vector we can use `batch` and `buffer` to send data after some time or when buffer is full, so the data is not sent to elasticsearch immediately and we avoid too many requests.
