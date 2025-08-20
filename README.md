@@ -28,3 +28,11 @@ after setup is done, we can run the project with `docker compose -f docker-compo
 ## notice
 
 - if you see `Network elk-with-docker-compose_elknet  Resource is still in use` error, you can remove the network and containers with `docker compose down --volumes --remove-orphans` command.
+
+- to add kibana HTTPS support we have to generate cert also for kibana in cert-config.yml and add the following lines to kibana.yml:
+
+```yaml
+server.ssl.enabled: true
+server.ssl.certificate: /usr/share/kibana/config/certs/kibana.crt
+server.ssl.key: /usr/share/kibana/config/certs/kibana.key
+  ```
