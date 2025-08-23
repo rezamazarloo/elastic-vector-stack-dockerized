@@ -45,10 +45,10 @@ sinks:
   #   endpoints:
   #     - http://elasticsearch:9200  # Elasticsearch service name in the elknet network.
   #   api_version: v8
-  #   index: logs-{{ timestamp | format: "%Y.%m.%d" }}  # Dynamic index based on log timestamp.
-  #   bulk_action: index
+  #   bulk:
+  #     action: index
+  #     index: "logs-%Y.%m.%d" # Dynamic index based on log timestamp.
   #   auth:
   #     strategy: basic
   #     user: ${ELASTICSEARCH_VECTOR_USER}
   #     password: ${ELASTICSEARCH_VECTOR_PASSWORD}
-
