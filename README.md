@@ -40,3 +40,4 @@ server.ssl.key: /usr/share/kibana/config/certs/kibana.key
   ```
 
 - for vector we can use `batch` and `buffer` to send data after some time or when buffer is full, so the data is not sent to elasticsearch immediately and we avoid too many requests.
+- for docker compose env vars if .env is not in current dir and is located in another dir use `docker compose --env-file ./env/elk.env -f elk-docker-compose.yml up`
