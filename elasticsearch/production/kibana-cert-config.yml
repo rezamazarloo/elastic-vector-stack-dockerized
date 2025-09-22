@@ -1,0 +1,3 @@
+instances:
+  - name: kibana
+    dns: [ "localhost", "kibana", "example.com" ]

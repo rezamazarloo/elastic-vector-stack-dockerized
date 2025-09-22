@@ -23,3 +23,8 @@ xpack.reporting.encryptionKey: ${KIBANA_REPORTING_ENCRYPTION_KEY}
 # Trust CA (to connect elastic cluster)
 elasticsearch.ssl.certificateAuthorities: [ "config/certs/ca/ca.crt" ]
 elasticsearch.ssl.verificationMode: full
+
+# browser to kibana https traffic encryption
+server.ssl.certificate: config/certs/kibana/kibana.crt # must not be csr
+server.ssl.key: config/certs/kibana/kibana.key
+server.ssl.enabled: true

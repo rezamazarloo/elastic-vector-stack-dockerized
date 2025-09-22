@@ -24,11 +24,32 @@ services:
           rm -f /certs/elastic-certificates.zip;
         fi
 
+        if [ ! -f /certs/kibana/kibana.csr ]; then
+          echo "Generating kibana cert...";
+          elasticsearch-certutil csr \
+            --in ./config/kibana-cert-config.yml \
+            --out /certs/kibana-certificates.zip;
+          unzip /certs/kibana-certificates.zip -d /certs;
+          rm -f /certs/kibana-certificates.zip;
+          echo "📝 Generated kibana certificates."
+        fi
+
+        if [ -f /certs/kibana/kibana.csr ] && [ ! -f /certs/kibana/kibana.crt ]; then
+          echo "Self-signing kibana cert...";
+          openssl x509 -req \
+            -in /certs/kibana/kibana.csr \
+            -signkey /certs/kibana/kibana.key \
+            -out /certs/kibana/kibana.crt \
+            -days 365;
+          echo "🔐 Self-signed certificate created for kibana: /certs/kibana/kibana.crt"
+        fi
+
         echo "✅ Certificates are ready in /certs"
       '
     user: "0" # run as root so it can write into mounted folder
     volumes:
       - ./elasticsearch/production/cert-config.yml:/usr/share/elasticsearch/config/cert-config.yml:ro
+      - ./elasticsearch/production/kibana-cert-config.yml:/usr/share/elasticsearch/config/kibana-cert-config.yml:ro
       - ./elasticsearch/production/certs:/certs
     networks:
       - elknet
@@ -173,6 +194,7 @@ services:
     volumes:
       - ./kibana/production/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
       - ./elasticsearch/production/certs/ca/ca.crt:/usr/share/kibana/config/certs/ca/ca.crt:ro
+      - ./elasticsearch/production/certs/kibana:/usr/share/kibana/config/certs/kibana:ro
     networks:
       - elknet
     restart: unless-stopped
