@@ -91,7 +91,10 @@ services:
     image: elasticsearch:8.19.2
     container_name: es01
     # total container RAM is 4GB (minimum for production must be 8GB)
-    mem_limit: 4g
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
       # 2GB heap size (half of container RAM)
@@ -121,7 +124,10 @@ services:
     image: elasticsearch:8.19.2
     container_name: es02
     # total container RAM is 4GB (minimum for production must be 8GB)
-    mem_limit: 4g
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
       # 2GB heap size (half of container RAM)
@@ -151,7 +157,10 @@ services:
     image: elasticsearch:8.19.2
     container_name: es03
     # total container RAM is 4GB (minimum for production must be 8GB)
-    mem_limit: 4g
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
       # 2GB heap size (half of container RAM)

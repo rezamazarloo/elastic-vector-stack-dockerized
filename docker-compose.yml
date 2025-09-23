@@ -32,7 +32,10 @@ services:
     container_name: elasticsearch
     # total container RAM is 1GB
     # set 512MB heap size (half of container RAM)
-    mem_limit: 1g
+    deploy:
+      resources:
+        limits:
+          memory: 1G
     environment:
       ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-changeme}
       # 512MB heap size (half of container RAM)
